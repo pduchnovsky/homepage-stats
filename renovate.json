@@ -1,5 +1,5 @@
 {
-  "extends": ["config:recommended", ":pinDigests"],
+  "extends": ["config:recommended", "docker:pinDigests"],
   "enabledManagers": ["gomod", "dockerfile", "github-actions"],
   "dependencyDashboard": true,
   "prConcurrentLimit": 3,
