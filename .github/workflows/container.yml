@@ -9,12 +9,14 @@ on:
       - .gitignore
       - compose.yaml
       - renovate.json
+      - .github/CODEOWNERS
   pull_request:
     paths-ignore:
       - README.md
       - .gitignore
       - compose.yaml
       - renovate.json
+      - .github/CODEOWNERS
   workflow_dispatch:
 
 permissions:
