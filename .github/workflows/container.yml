@@ -1,0 +1,102 @@
+name: Test and Publish
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify Modules
+        run: |
+          go mod download all
+          go mod verify
+      - name: Format and Vet
+        run: |
+          gofmt -w main.go main_test.go
+          go vet -mod=readonly ./...
+      - name: Test With Race Detector
+        run: go test -mod=readonly -race -cover ./...
+      - name: Read Go Version
+        id: go
+        run: echo "version=$(awk '$1 == "go" {print $2}' go.mod)" >> "$GITHUB_OUTPUT"
+      - name: Build and Smoke-Test Image
+        env:
+          GO_VERSION: ${{ steps.go.outputs.version }}
+        run: |
+          docker build --build-arg "GO_VERSION=$GO_VERSION" -t homepage-stats:test .
+          docker run -d --name stats-smoke --user 1000:1000 -e STATS_PORT=18080 homepage-stats:test
+          trap 'docker logs stats-smoke; docker rm -f stats-smoke' EXIT
+          for attempt in {1..30}; do
+            if docker exec stats-smoke /stats healthcheck; then
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
+
+  publish:
+    if: github.event_name != 'pull_request' && (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || startsWith(github.ref, 'refs/tags/v'))
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Read Build Settings
+        id: settings
+        run: |
+          echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+          echo "go-version=$(awk '$1 == "go" {print $2}' go.mod)" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        id: metadata
+        with:
+          images: ${{ steps.settings.outputs.image }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          build-args: GO_VERSION=${{ steps.settings.outputs.go-version }}
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: |
+            ${{ steps.metadata.outputs.labels }}
+            org.opencontainers.image.licenses=MIT
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: mode=max
+          sbom: true

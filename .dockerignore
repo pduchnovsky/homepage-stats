@@ -1,0 +1,8 @@
+*
+!go.mod
+!go.sum
+!main.go
+!LICENSE
+!THIRD_PARTY_NOTICES.md
+!scripts/
+!scripts/licenses.sh

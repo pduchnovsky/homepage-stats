@@ -1,0 +1,15 @@
+services:
+  stats:
+    image: ${STATS_IMAGE:?Set STATS_IMAGE to a container image reference}
+    user: "${PUID:-65532}:${GUID:-65532}"
+    environment:
+      - STATS_DISK_PATH=${STATS_DISK_PATH:-/}
+      - STATS_PORT=${STATS_PORT:-61208}
+    ports:
+      - ${STATS_BIND_IP:-127.0.0.1}:${STATS_PORT:-61208}:${STATS_PORT:-61208}
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped

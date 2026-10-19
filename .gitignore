@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+/stats
+/homepage-stats
+/coverage.out
+/licenses/
+.DS_Store
+*.test
