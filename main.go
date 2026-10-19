@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -347,9 +348,14 @@ func run(ctx context.Context, port int) error {
 		WriteTimeout:      10 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
+	listener, err := net.Listen("tcp", server.Addr)
+	if err != nil {
+		return err
+	}
+	log.Printf("listening on %s", listener.Addr())
 	serveErrors := make(chan error, 1)
 	go func() {
-		serveErrors <- server.ListenAndServe()
+		serveErrors <- server.Serve(listener)
 	}()
 	select {
 	case <-ctx.Done():
