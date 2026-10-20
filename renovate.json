@@ -3,6 +3,7 @@
   "enabledManagers": ["gomod", "dockerfile", "github-actions"],
   "postUpdateOptions": ["gomodUpdateImportPaths"],
   "dependencyDashboard": true,
+  "dependencyDashboardAutoclose": true,
   "prConcurrentLimit": 3,
   "automerge": false,
   "packageRules": [
