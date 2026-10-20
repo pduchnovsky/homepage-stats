@@ -4,19 +4,27 @@ on:
   push:
     branches: [main]
     tags: ["v*.*.*"]
-    paths-ignore:
-      - README.md
-      - .gitignore
-      - compose.yaml
-      - renovate.json
-      - .github/CODEOWNERS
+    paths:
+      - .dockerignore
+      - .github/workflows/container.yml
+      - Dockerfile
+      - "**/*.go"
+      - go.mod
+      - go.sum
+      - LICENSE
+      - THIRD_PARTY_NOTICES.md
+      - scripts/licenses.sh
   pull_request:
-    paths-ignore:
-      - README.md
-      - .gitignore
-      - compose.yaml
-      - renovate.json
-      - .github/CODEOWNERS
+    paths:
+      - .dockerignore
+      - .github/workflows/container.yml
+      - Dockerfile
+      - "**/*.go"
+      - go.mod
+      - go.sum
+      - LICENSE
+      - THIRD_PARTY_NOTICES.md
+      - scripts/licenses.sh
   workflow_dispatch:
 
 permissions:
