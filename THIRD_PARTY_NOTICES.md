@@ -1,8 +1,9 @@
 # Third-Party Notices
 
-The application uses [gopsutil v3](https://github.com/shirou/gopsutil),
-Copyright (c) 2014 WAKAYAMA Shirou, under BSD-3-Clause terms. Its license also
-includes notices for material from Go's encoding/binary package.
+The application uses [gopsutil](https://github.com/shirou/gopsutil). The exact
+module version is recorded in `go.mod`. The module's license, including its
+third-party notices, is copied into `/usr/share/licenses` in the image and into
+the generated `licenses` directory for standalone binary distributions.
 
 Go and transitive modules retain their own licenses. The image build copies
 the Go license and module-root LICENSE, COPYING, NOTICE, and PATENTS files
