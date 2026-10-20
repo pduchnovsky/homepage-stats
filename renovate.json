@@ -1,6 +1,7 @@
 {
   "extends": ["config:recommended", "docker:pinDigests"],
   "enabledManagers": ["gomod", "dockerfile", "github-actions"],
+  "postUpdateOptions": ["gomodUpdateImportPaths"],
   "dependencyDashboard": true,
   "prConcurrentLimit": 3,
   "automerge": false,
