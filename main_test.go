@@ -12,7 +12,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/shirou/gopsutil/v4/host"
+	"github.com/shirou/gopsutil/v4/sensors"
 )
 
 func testApplication() *application {
@@ -146,7 +146,7 @@ func TestCollectionFailures(t *testing.T) {
 }
 
 func TestSensorCompatibility(t *testing.T) {
-	sensors := sensorStats([]host.TemperatureStat{
+	sensors := sensorStats([]sensors.TemperatureStat{
 		{SensorKey: "coretemp_physical_id_0", Temperature: 52},
 		{SensorKey: "coretemp_core_0", Temperature: 51, High: 90, Critical: 105},
 		{SensorKey: "k10temp_tctl", Temperature: 53},

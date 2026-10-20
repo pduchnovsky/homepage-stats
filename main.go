@@ -22,6 +22,7 @@ import (
 	"github.com/shirou/gopsutil/v4/host"
 	"github.com/shirou/gopsutil/v4/load"
 	"github.com/shirou/gopsutil/v4/mem"
+	"github.com/shirou/gopsutil/v4/sensors"
 )
 
 type QuickLook struct {
@@ -163,7 +164,7 @@ func sensorLabel(sensorKey string) string {
 	}
 }
 
-func sensorStats(temperatures []host.TemperatureStat) []SensorStat {
+func sensorStats(temperatures []sensors.TemperatureStat) []SensorStat {
 	sensors := make([]SensorStat, 0, len(temperatures))
 	for _, temperature := range temperatures {
 		key := strings.ToLower(temperature.SensorKey)
@@ -186,7 +187,7 @@ func sensorStats(temperatures []host.TemperatureStat) []SensorStat {
 }
 
 func readSensors() ([]SensorStat, error) {
-	temperatures, err := host.SensorsTemperatures()
+	temperatures, err := sensors.SensorsTemperatures()
 	if err != nil && len(temperatures) == 0 {
 		return nil, err
 	}
