@@ -11,6 +11,7 @@
       "description": "Keep the Go toolchain directive current; CI and Docker both read go.mod",
       "matchManagers": ["gomod"],
       "matchDepNames": ["go"],
+      "matchDepTypes": ["golang"],
       "rangeStrategy": "bump"
     },
     {
