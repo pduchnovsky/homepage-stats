@@ -110,9 +110,10 @@ Docker socket. Privileged mode and host PID sharing are not required.
 ## Images and updates
 
 Images are published to GHCR for Linux AMD64 and ARM64 when a GitHub Release is
-published. A release tag such as `v0.1.0` publishes `:0.1.0`, `:0.1`, and a
-commit-specific `:sha-...` tag. Stable releases also update `:latest`; prereleases
-do not. Use a release tag or digest for stable deployments.
+published. The image tag matches the release tag (for example, `v0.1.0`). Stable
+releases also update `:latest`; prereleases do not. This follows the same tag
+convention as the OIDC repository. Use a release tag or digest for stable
+deployments.
 
 Pull and recreate the service to apply an image update:
 
