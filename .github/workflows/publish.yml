@@ -75,5 +75,7 @@ jobs:
           labels: |
             ${{ steps.metadata.outputs.labels }}
             org.opencontainers.image.licenses=MIT
+          provenance: false
+          sbom: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
