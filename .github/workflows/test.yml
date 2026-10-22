@@ -1,0 +1,77 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .dockerignore
+      - .github/workflows/test.yml
+      - .github/workflows/publish.yml
+      - Dockerfile
+      - "**/*.go"
+      - go.mod
+      - go.sum
+      - LICENSE
+      - THIRD_PARTY_NOTICES.md
+      - scripts/licenses.sh
+  pull_request:
+    paths:
+      - .dockerignore
+      - .github/workflows/test.yml
+      - .github/workflows/publish.yml
+      - Dockerfile
+      - "**/*.go"
+      - go.mod
+      - go.sum
+      - LICENSE
+      - THIRD_PARTY_NOTICES.md
+      - scripts/licenses.sh
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify Modules
+        run: |
+          go mod download all
+          go mod verify
+      - name: Format and Vet
+        run: |
+          gofmt -w main.go main_test.go
+          go vet -mod=readonly ./...
+      - name: Test With Race Detector
+        run: go test -mod=readonly -race -cover ./...
+      - name: Read Go Version
+        id: go
+        run: echo "version=$(awk '$1 == "go" {print $2}' go.mod)" >> "$GITHUB_OUTPUT"
+      - name: Build and Smoke-Test Image
+        env:
+          GO_VERSION: ${{ steps.go.outputs.version }}
+        run: |
+          docker build --build-arg "GO_VERSION=$GO_VERSION" -t homepage-stats:test .
+          docker run -d --name stats-smoke --user 1000:1000 -e STATS_PORT=18080 homepage-stats:test
+          trap 'docker logs stats-smoke; docker rm -f stats-smoke' EXIT
+          for attempt in {1..30}; do
+            if docker exec stats-smoke /stats healthcheck; then
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
