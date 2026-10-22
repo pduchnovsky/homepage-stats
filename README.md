@@ -165,12 +165,16 @@ docker compose pull
 docker compose up -d
 ```
 
-Dependency maintenance is configured through Renovate for Go modules, Dockerfile
-dependencies, and GitHub Actions. Automerge is disabled; major module upgrades
-require approval. The Go version in `go.mod` selects both the CI toolchain and
-Docker compiler. Actions are pinned to commit SHAs so moved version tags cannot
-silently change workflow code; Renovate proposes updates to these pins.
+Dependency maintenance is configured through Dependabot for Go modules,
+Dockerfile images, and GitHub Actions. Go minor and patch updates are grouped;
+major updates remain separate pull requests for review. The Go version in
+`go.mod` selects both the CI toolchain and Docker compiler. Actions are pinned
+to commit SHAs, which Dependabot can update when their upstream versions change.
 The compiler image uses a version tag derived from `go.mod`, not a digest pin.
+
+Dependabot does not provide Renovate's `gomodUpdateImportPaths` behavior. A Go
+module upgrade that changes its import path requires a manual source import
+migration and review.
 
 ## License and Attribution
 
